@@ -1,7 +1,10 @@
-// src/sockets/index.ts
 import { Server } from 'socket.io'
 import logger from '../utils/log'
 
+/**
+ * 
+ * @param io Setup kết nối khi server và client chạy thì tự động connect lại
+ */
 
 export const setupSocket = (io: Server) => {
   // Middleware xác thực người dùng

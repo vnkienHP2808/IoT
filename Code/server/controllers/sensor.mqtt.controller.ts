@@ -6,6 +6,8 @@ import { io } from '..';
 
 /**
  * Hàm làm tròn số 2 số sau thập phân
+ * @params num
+ * @return {số thập phân sau khi xử lý}
  */
 const roundToTwo = (num: number): number => {
   if (typeof num !== 'number') return num;
@@ -14,6 +16,8 @@ const roundToTwo = (num: number): number => {
 
 /**
  * Hàm chuẩn hóa Date thành "dd/MM/yyyy"
+ * @param date
+ * @returns {định dạng ngày sau khi xử lý}
  */
 const formatDate = (date: string): string => {
 
@@ -35,18 +39,7 @@ export const handleSensorData = async (payload: string) => {
   try {
     const data = JSON.parse(payload);
     
-    // 1. LƯU VÀO MONGODB
-    const newData = new SensorData({
-      temperature: roundToTwo(data.temperature),
-      humidity: roundToTwo(data.humidity),
-      light: roundToTwo(data.light),
-      soilMoisture: roundToTwo(data.soilMoisture),
-      timestamp: formatDate(data.timestamp)
-    });
-
-    const savedData = await newData.save();
-    logger.info(`Đã lưu sensor data (MQTT): ${savedData._id}`);
-
+    // biến để gửi thẳng lên client qua socket
     const emitData = {
       temperature: roundToTwo(data.temperature),
       humidity: roundToTwo(data.humidity),
@@ -55,7 +48,13 @@ export const handleSensorData = async (payload: string) => {
       timestamp: formatDate(data.timestamp)
     };
 
+    // biến model để lưu vào db
+    const newData = new SensorData(emitData)
 
+    const savedData = await newData.save();
+    logger.info(`Đã lưu sensor data (MQTT): ${savedData._id}`);
+
+    // phát sự kiện tới client, bên client lắng nghe để lấy dữ liệu
     if(io){
       io.emit('sensor/data/push', emitData)
       logger.info(`Đã emit "sensor/data/push" tới client`);
