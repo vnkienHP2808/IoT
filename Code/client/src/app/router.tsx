@@ -16,7 +16,11 @@ import NotificationPage from './pages/notification'
 const router: RouteObject[] = [
   {
     path: '/',
-    element: <PageLayoutPage />,
+    element: (
+      <ProtectedRotes>
+        <PageLayoutPage />
+      </ProtectedRotes>
+    ),
     children: [
       {
         index: true,
@@ -24,47 +28,35 @@ const router: RouteObject[] = [
       },
       {
         path: 'chart-page',
-        element: <ChartPage />
+        element: <ChartPage /> //user, admin
       },
       {
         path: 'ai-schedule-page',
-        element: <AISchedulePage />
+        element: <AISchedulePage /> //user, admin
       },
       {
         path: 'manual-control-page',
-        element: <ManualControlPage />
+        element: <ManualControlPage /> //user, admin
       },
       {
         path: 'log-page',
-        element: <LogPage />
+        element: <LogPage /> //user, admin
       },
       {
         path: 'report-page',
-        element: (
-          <ProtectedRotes>
-            <ReportPage />
-          </ProtectedRotes>
-        )
+        element: <ReportPage /> // admin
       },
       {
         path: 'config-page',
-        element: (
-          <ProtectedRotes>
-            <ConfigPage />
-          </ProtectedRotes>
-        )
+        element: <ConfigPage /> // admin
       },
       {
         path: 'user-page',
-        element: (
-          <ProtectedRotes>
-            <UserPage />
-          </ProtectedRotes>
-        )
+        element: <UserPage /> // admin
       },
       {
         path: 'notification-page',
-        element: <NotificationPage />
+        element: <NotificationPage /> //user, admin
       },
       {
         path: '*',
