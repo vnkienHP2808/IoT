@@ -5,7 +5,7 @@ import logger from "../utils/log"
 import * as jwt from 'jsonwebtoken'
 import { AuthRequest } from '../shared/types/util.type'
 import { getDeviceCount } from '../services/device.service'
-import { error } from 'console'
+import Audit from '../models/Audit'
 
 
 const login = async (req: Request, res: Response) => {
@@ -46,6 +46,7 @@ const login = async (req: Request, res: Response) => {
     const userResponseData = {
       id: user.id,
       username: user.username,
+      email: user.email,
       fullName: user.fullName,
       address: user.address,
       phoneNumber: user.phoneNumber,
@@ -73,7 +74,7 @@ const getListUser = async (req: AuthRequest, res: Response) => {
   try {
     const currentUserRole = (req.user as jwt.JwtPayload).role
     if(currentUserRole === UserRole.ADMIN){
-      const listUser = await User.find().select('fullName address phoneNumber role')
+      const listUser = await User.find().select('email fullName address phoneNumber role')
       if (listUser.length) {
         return res.status(HTTPStatus.OK).json({
           status: HTTPStatus.OK,
@@ -122,11 +123,10 @@ const getCountDevice = async (req: AuthRequest, res: Response) => {
       });
     }
     else{
-      logger.error('Lỗi không thể lấy số lượng thiết bị')
-      return res.status(HTTPStatus.INTERNAL_SERVER_ERROR).json({
-        status: HTTPStatus.INTERNAL_SERVER_ERROR,
-        message: 'Lỗi server',
-        data: null
+      logger.error('Bạn không có quyền hạn này')
+      return res.status(HTTPStatus.FORBIDDEN).json({
+        status: HTTPStatus.FORBIDDEN,
+        message: 'Bạn không có quyền hạn này',
       })
     }
   } catch (error : any) {
@@ -139,4 +139,62 @@ const getCountDevice = async (req: AuthRequest, res: Response) => {
   }
 }
 
-export { login, getListUser, getCountDevice}
+const formatDate = (date: Date): string => {
+  if (!date) return '';
+
+  // Phần Ngày (Date)
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // getMonth() bắt đầu từ 0
+  const year = date.getFullYear();
+
+  // Phần Giờ (Time)
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+
+  // Kết hợp
+  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+};
+
+const getLogs = async (req: AuthRequest, res: Response) => {
+  logger.info('Lấy Logs hệ thống')
+  try {
+    const user = (req.user as jwt.JwtPayload).username
+    const userRole = (req.user as jwt.JwtPayload).role
+
+    if(userRole !== 'ADMIN'){
+      logger.error('Bạn không có quyền hạn này')
+      return res.status(HTTPStatus.FORBIDDEN).json({
+        status: HTTPStatus.FORBIDDEN,
+        message: 'Bạn không có quyền hạn này',
+      })
+    }
+    
+
+    const logs = (await Audit.find().sort({createdAt: -1})).map(log => {
+      // Chuyển Mongoose document thành plain object
+      const logObject = log.toObject();
+      
+      return {
+        ...logObject,
+        // Ghi đè trường 'createdAt' bằng chuỗi đã định dạng
+        createdAt: formatDate(logObject.createdAt),
+      };
+    });
+
+    return res.status(HTTPStatus.OK).json({
+      status: HTTPStatus.OK,
+      message: 'Lấy toàn bộ Log thành công',
+      data: logs
+    })
+  } catch (error : any) {
+    logger.error('Lỗi không thể lấy nhật ký: ', error)
+    return res.status(HTTPStatus.INTERNAL_SERVER_ERROR).json({
+      status: HTTPStatus.INTERNAL_SERVER_ERROR,
+      message: 'Lỗi server',
+    })
+  }
+}
+
+
+export { login, getListUser, getCountDevice, getLogs}
