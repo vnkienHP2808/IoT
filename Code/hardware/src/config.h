@@ -5,10 +5,10 @@
 #define WIFI_PASSWORD   "password"  // Mật khẩu
 
 // MQTT Broker
-#define MQTT_BROKER     "broker.hivemq.com"     // Địa chỉ public broker
-#define MQTT_PORT       1883
-#define MQTT_USER       ""
-#define MQTT_PASS       ""
+#define MQTT_BROKER     "mqtts://6737c5bbe1cd42bc9fe23790f95a7e72.s1.eu.hivemq.cloud"     // Địa chỉ public broker
+#define MQTT_PORT       8883
+#define MQTT_USER       "server"
+#define MQTT_PASS       "Server123456"
 
 // Device infor
 #define DEVICE_ID       "esp32-001"                     // Định danh thiết bị (phân biệt khi có nhiều thiết bị khác nhau)
