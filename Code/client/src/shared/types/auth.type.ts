@@ -28,10 +28,10 @@ interface GetCountDeviceResposne {
 }
 
 interface GetLogsResponse {
-  timestamp: string
+  createdAt: string
   actor: string
   event: string
-  description: string
+  details: string
 }
 
 export enum ROLE {
